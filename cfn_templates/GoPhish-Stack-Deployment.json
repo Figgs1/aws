@@ -1,12 +1,12 @@
-{  
+{
    "AWSTemplateFormatVersion":"2010-09-09",
    "Description":"AWS CloudFormation Template to deploy an Amazon Linux instance and install and configure GoPhish Phishing Campaign Platform solution.",
-   "Parameters":{  
-      "InstanceType":{  
+   "Parameters":{
+      "InstanceType":{
          "Description":"GoPhish Application + Web Server + SMTP relay",
          "Type":"String",
          "Default":"t2.micro",
-         "AllowedValues":[  
+         "AllowedValues":[
             "t1.micro",
             "t2.nano",
             "t2.micro",
@@ -16,12 +16,12 @@
          ],
          "ConstraintDescription":"must be a valid EC2 instance type."
       },
-      "KeyName":{  
+      "KeyName":{
          "Description":"GoPhish EC2 KeyPair to enable SSH access to the instances",
          "Type":"AWS::EC2::KeyPair::KeyName",
          "ConstraintDescription":"must be the name of an existing EC2 KeyPair."
       },
-      "SSHLocation":{  
+      "SSHLocation":{
          "Description":"The IP address range that can be used to SSH to the EC2 instances",
          "Type":"String",
          "MinLength":"9",
@@ -31,104 +31,162 @@
          "ConstraintDescription":"must be a valid IP CIDR range of the form x.x.x.x/x."
       }
    },
-   "Mappings":{  
-      "AWSInstanceType2Arch":{  
-         "t1.micro":{  
+   "Mappings":{
+      "AWSInstanceType2Arch":{
+         "t1.micro":{
             "Arch":"PV64"
          },
-         "t2.nano":{  
+         "t2.nano":{
             "Arch":"HVM64"
          },
-         "t2.micro":{  
+         "t2.micro":{
             "Arch":"HVM64"
          },
-         "t2.small":{  
+         "t2.small":{
             "Arch":"HVM64"
          },
-         "t2.medium":{  
+         "t2.medium":{
             "Arch":"HVM64"
          },
-         "t2.large":{  
+         "t2.large":{
             "Arch":"HVM64"
          }
       },
-      "AWSInstanceType2NATArch":{  
-         "t1.micro":{  
+      "AWSInstanceType2NATArch":{
+         "t1.micro":{
             "Arch":"NATPV64"
          },
-         "t2.nano":{  
+         "t2.nano":{
             "Arch":"NATHVM64"
          },
-         "t2.micro":{  
+         "t2.micro":{
             "Arch":"NATHVM64"
          },
-         "t2.small":{  
+         "t2.small":{
             "Arch":"NATHVM64"
          },
-         "t2.medium":{  
+         "t2.medium":{
             "Arch":"NATHVM64"
          },
-         "t2.large":{  
+         "t2.large":{
             "Arch":"NATHVM64"
          }
       },
-      "AWSRegionArch2AMI":{  
-         "us-east-1":{  
+      "AWSRegionArch2AMI":{
+         "us-east-1":{
             "PV64":"ami-abc1ebbd",
             "HVM64":"ami-a4c7edb2"
          },
-         "us-west-2":{  
+         "us-west-2":{
             "PV64":"ami-98f3e7e1",
             "HVM64":"ami-6df1e514"
          },
-         "us-west-1":{  
+         "us-west-1":{
             "PV64":"ami-347e5254",
             "HVM64":"ami-327f5352"
          },
-         "us-east-2":{  
+         "us-east-2":{
             "PV64":"NOT_SUPPORTED",
             "HVM64":"ami-8a7859ef"
          }
       }
    },
-   "Resources":{  
-      "EC2Instance":{  
+   "Resources":{
+      "gophishinstancerole":{
+         "Type":"AWS::IAM::Role",
+         "Properties":{
+            "AssumeRolePolicyDocument":{
+               "Version":"2012-10-17",
+               "Statement":[
+                  {
+                     "Effect":"Allow",
+                     "Principal":{
+                        "Service":[
+                           "ec2.amazonaws.com"
+                        ]
+                     },
+                     "Action":[
+                        "sts:AssumeRole"
+                     ]
+                  }
+               ]
+            },
+            "Path":"/"
+         }
+      },
+      "gophishInstanceProfile":{
+         "Type":"AWS::IAM::InstanceProfile",
+         "Properties":{
+            "Path":"/",
+            "Roles":[
+               {
+                  "Ref":"gophishinstancerole"
+               }
+            ]
+         }
+      },
+      "gophishinstancepolicy":{
+         "Type":"AWS::IAM::Policy",
+         "Properties":{
+            "PolicyName":"gophishinstancepolicy",
+            "PolicyDocument":{
+               "Statement":[
+                  {
+                     "Effect":"Allow",
+                     "Action":[
+                        "s3:*"
+                     ],
+                     "Resource":"*"
+                  }
+               ]
+            },
+            "Roles":[
+               {
+                  "Ref":"gophishinstancerole"
+               }
+            ]
+         }
+      },
+      "EC2Instance":{
          "Type":"AWS::EC2::Instance",
-         "Properties":{  
-            "UserData":{  
-               "Fn::Base64":{  
-                  "Fn::Join":[  
+         "Properties":{
+            "UserData":{
+               "Fn::Base64":{
+                  "Fn::Join":[
                      "",
-                     [  
+                     [
                         "IPAddress=",
-                        {  
+                        {
                            "Ref":"IPAddress"
                         }
                      ]
                   ]
                }
             },
-            "InstanceType":{  
+            "InstanceType":{
                "Ref":"InstanceType"
             },
-            "SecurityGroups":[  
-               {  
+            "SecurityGroups":[
+               {
                   "Ref":"InstanceSecurityGroup"
                }
             ],
-            "KeyName":{  
+            "KeyName":{
                "Ref":"KeyName"
             },
-            "ImageId":{  
-               "Fn::FindInMap":[  
+            "IamInstanceProfile":{
+               "Ref":"gophishInstanceProfile"
+            },
+            "ImageId":{
+               "Fn::FindInMap":[
                   "AWSRegionArch2AMI",
-                  {  
+                  {
                      "Ref":"AWS::Region"
                   },
-                  {  
-                     "Fn::FindInMap":[  
+                  {
+                     "Fn::FindInMap":[
                         "AWSInstanceType2Arch",
-                        {  
+                        {
                            "Ref":"InstanceType"
                         },
                         "Arch"
@@ -136,11 +194,11 @@
                   }
                ]
             },
-            "UserData":{  
-               "Fn::Base64":{  
-                  "Fn::Join":[  
+            "UserData":{
+               "Fn::Base64":{
+                  "Fn::Join":[
                      "",
-                     [  
+                     [
                         "#!/bin/bash -v \n",
                         "yum -y install postfix \n",
                         "mkdir /usr/share/gophish-v0.6.0/  \n",
@@ -161,47 +219,51 @@
             }
          }
       },
-      "InstanceSecurityGroup":{  
+      "InstanceSecurityGroup":{
          "Type":"AWS::EC2::SecurityGroup",
-         "Properties":{  
+         "Properties":{
             "GroupDescription":"Enable SSH access",
-            "SecurityGroupIngress":[  
-               {  
+            "SecurityGroupIngress":[
+               {
                   "IpProtocol":"tcp",
                   "FromPort":"22",
                   "ToPort":"22",
-                  "CidrIp":{  
-                     "Ref":"SSHLocation"
-                  }
+                  "CidrIp":"0.0.0.0/0"
+               },
+               {
+                  "IpProtocol":"tcp",
+                  "FromPort":"3333",
+                  "ToPort":"3333",
+                  "CidrIp":"0.0.0.0/0"
                }
             ]
          }
       },
-      "IPAddress":{  
+      "IPAddress":{
          "Type":"AWS::EC2::EIP"
       },
-      "IPAssoc":{  
+      "IPAssoc":{
          "Type":"AWS::EC2::EIPAssociation",
-         "Properties":{  
-            "InstanceId":{  
+         "Properties":{
+            "InstanceId":{
                "Ref":"EC2Instance"
             },
-            "EIP":{  
+            "EIP":{
                "Ref":"IPAddress"
             }
          }
       }
    },
-   "Outputs":{  
-      "InstanceId":{  
+   "Outputs":{
+      "InstanceId":{
          "Description":"InstanceId of the newly created EC2 instance",
-         "Value":{  
+         "Value":{
             "Ref":"EC2Instance"
          }
       },
-      "InstanceIPAddress":{  
+      "InstanceIPAddress":{
          "Description":"IP address of the newly created EC2 instance",
-         "Value":{  
+         "Value":{
             "Ref":"IPAddress"
          }
       }
