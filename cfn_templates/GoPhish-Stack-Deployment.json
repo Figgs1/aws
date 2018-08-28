@@ -229,7 +229,8 @@
                         "sudo git clone https://github.com/chrismaddalena/GoReport.git \n",
                         "sudo chown -R ec2-user /usr/share/GoReport/ \n",
                         "cd /usr/share/GoReport \n",
-                        "sudo pip install -r requirements.txt --user \n",
+                        "pip install -r requirements.txt --user \n",
+                        "pip install maxminddb-geolite2 --user \n",
                         "reboot now \n"
                      ]
                   ]
