@@ -212,7 +212,28 @@
                         "#edit main.cf file and change line #mynetworks_style = host to mynetworks_style = host \n",
                         "sed -i 's/^#mynetworks_style = host/mynetworks_style = host/g' /etc/postfix/main.cf \n",
                         "sed -i 's/^#relayhost = $mydomain/relayhost = $mydomain/g' /etc/postfix/main.cf \n",
-                        "reboot now \n"
+                        "sudo yum update -y \n,
+                        "sudo yum install -y httpd24 php70 mysql56-server php70-mysqlnd \n",
+                        "sudo service httpd start \n",
+                        "sudo chkconfig httpd on \n",
+                        "sudo usermod -a -G apache ec2-user \n",
+                        "sudo chown -R ec2-user:apache /var/www \n",
+                        "sudo chmod 2775 /var/www \n",
+                        "find /var/www -type d -exec sudo chmod 2775 {} \; \n",
+                        "find /var/www -type f -exec sudo chmod 0664 {} \; \n",
+                        "sudo service mysqld start \n",
+                        "sudo chkconfig mysqld on \n",
+                        "yum install curl-devel expat-devel gettext-devel \ openssl-devel zlib-devel perl-devel asciidoc xmlto \n",
+                        "sudo yum install python34 \n",
+                        "curl -O https://bootstrap.pypa.io/get-pip.py \n",
+                        "python3 get-pip.py --user \n",
+                        "cd /usr/share \n",
+                        "sudo git clone https://github.com/chrismaddalena/GoReport.git \n",
+                        "sudo chown -R ec2-user /usr/share/GoReport/ \n",
+                        "cd /usr/share/GoReport \n",
+                        "sudo git clone https://github.com/rr2do2/maxminddb-geolite2 \n",
+                        "sudo pip install -r requirements.txt --user \n",
+                        "reboot now \n                        
                      ]
                   ]
                }
