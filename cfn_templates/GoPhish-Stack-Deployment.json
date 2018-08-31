@@ -255,6 +255,12 @@
                   "FromPort":"3333",
                   "ToPort":"3333",
                   "CidrIp":"0.0.0.0/0"
+               },
+               {  
+                  "IpProtocol":"tcp",
+                  "FromPort":"81",
+                  "ToPort":"81",
+                  "CidrIp":"0.0.0.0/0"
                }
             ]
          }
