@@ -166,7 +166,7 @@
                   "Ref":"InstanceSecurityGroup"
                }
             ],
-            "KeyName": "cyberguard-ra.pem",
+            "KeyName": "cyberguard-ra",
             "IamInstanceProfile":{  
                "Ref":"gophishInstanceProfile"
             },
