@@ -173,7 +173,7 @@
                }
             ],
             "KeyName": {
-               "Ref:"KeyName"
+               "Ref":"KeyName"
             },
             "IamInstanceProfile":{  
                "Ref":"gophishInstanceProfile"
